@@ -3,11 +3,11 @@
 	xmlns="http://java.sun.com/xml/ns/javaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd">
 	<servlet>
-		<servlet-name>hello</servlet-name>
-		<servlet-class>pl.tomasino.jeeapp.servlet.MyServlet</servlet-class>
+		<servlet-name>CompaniesServlet</servlet-name>
+		<servlet-class>pl.tomasino.jeeapp.servlet.CompaniesServlet</servlet-class>
 	</servlet>
 	<servlet-mapping>
-		<servlet-name>hello</servlet-name>
-		<url-pattern>/hello</url-pattern>
+		<servlet-name>CompaniesServlet</servlet-name>
+		<url-pattern>/CompaniesServlet</url-pattern>
 	</servlet-mapping>
 </web-app>
