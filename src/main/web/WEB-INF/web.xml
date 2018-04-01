@@ -10,4 +10,5 @@
 		<servlet-name>CompaniesServlet</servlet-name>
 		<url-pattern>/CompaniesServlet</url-pattern>
 	</servlet-mapping>
+
 </web-app>
