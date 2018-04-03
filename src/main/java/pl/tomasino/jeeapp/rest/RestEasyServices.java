@@ -12,6 +12,7 @@ public class RestEasyServices extends Application {
 	public Set<Class<?>> getClasses() {
 		Set<Class<?>> resources = new java.util.HashSet<>();
 		resources.add(CompanyRESTService.class);
+		resources.add(AsyncRESTService.class);
 		return resources;
 	}
 }
