@@ -11,8 +11,8 @@ public class RestEasyServices extends Application {
 	@Override
 	public Set<Class<?>> getClasses() {
 		Set<Class<?>> resources = new java.util.HashSet<>();
-		resources.add(CompanyRESTService.class);
 		resources.add(AsyncRESTService.class);
+		resources.add(CompanyRESTService.class);
 		return resources;
 	}
 }

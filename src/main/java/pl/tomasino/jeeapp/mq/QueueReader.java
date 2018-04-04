@@ -1,12 +1,15 @@
 package pl.tomasino.jeeapp.mq;
 
-import javax.enterprise.context.Dependent;
+import javax.ejb.Schedule;
+import javax.ejb.Singleton;
+import javax.ejb.Startup;
 import javax.inject.Inject;
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.Destination;
 import javax.jms.JMSException;
-import javax.jms.MessageProducer;
+import javax.jms.Message;
+import javax.jms.MessageConsumer;
 import javax.jms.Session;
 import javax.jms.TextMessage;
 
@@ -15,18 +18,26 @@ import org.apache.log4j.Logger;
 
 import pl.tomasino.jeeapp.utils.PropertiesHandler;
 
-@Dependent
-public class MessageSender {
+@Singleton
+@Startup
+public class QueueReader {
 
-	final static Logger logger = Logger.getLogger(MessageSender.class);
+	final static Logger logger = Logger.getLogger(QueueReader.class);
 
 	@Inject
 	PropertiesHandler props;
 
-	public void sendMessage(String msg) {
+	@Schedule(hour = "*", minute = "*", second = "*/10", info = "Every 10 seconds timer")
+	public void readQueue() {
+
+		readMessages();
+
+	}
+
+	public void readMessages() {
 
 		try {
-			logger.info("Message to be sent: " + msg);
+
 			// Getting JMS connection from the server and starting it
 			ConnectionFactory connectionFactory = new ActiveMQConnectionFactory(props.getProperty("mqurl"));
 			Connection connection = connectionFactory.createConnection();
@@ -41,15 +52,21 @@ public class MessageSender {
 			Destination destination = session.createQueue(props.getProperty("mqqueuqe"));
 
 			// MessageProducer is used for sending messages to the queue.
-			MessageProducer producer = session.createProducer(destination);
+			MessageConsumer consumer = session.createConsumer(destination);
 
-			// We will send a small text message saying 'Hello World!!!'
-			TextMessage message = session.createTextMessage(msg);
+			// read a message from the queue destination
+			Message message = consumer.receive(10);
 
-			// Here we are sending our message!
-			producer.send(message);
+			// check if a message was received
+			if (message != null) {
+				// cast the message to the correct type
+				TextMessage textMessage = (TextMessage) message;
 
-			logger.info("Message sent: " + message.getText());
+				// retrieve the message content
+				String text = textMessage.getText();
+				logger.info("consumer received message with text=" + text);
+			}
+
 			connection.close();
 		} catch (JMSException e) {
 			e.printStackTrace();
