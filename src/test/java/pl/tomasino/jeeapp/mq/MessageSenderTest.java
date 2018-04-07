@@ -1,39 +1,61 @@
 package pl.tomasino.jeeapp.mq;
 
-import javax.ejb.Schedule;
-import javax.ejb.Singleton;
-import javax.ejb.Startup;
-import javax.inject.Inject;
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.Destination;
 import javax.jms.JMSException;
-import javax.jms.Message;
 import javax.jms.MessageConsumer;
 import javax.jms.Session;
 import javax.jms.TextMessage;
 
 import org.apache.activemq.ActiveMQConnectionFactory;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.TestWatcher;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.MockitoAnnotations;
 
-import lombok.extern.slf4j.Slf4j;
+import pl.tomasino.jeeapp.MyTestWatcher;
 import pl.tomasino.jeeapp.utils.PropertiesHandler;
 
-@Singleton
-@Startup
-@Slf4j
-public class QueueReader {
+public class MessageSenderTest {
 
-	@Inject
+	private String msg = "test message";
+
+	@Mock
 	PropertiesHandler props;
 
-	@Schedule(hour = "*", minute = "*", second = "*/30", info = "Every 30 seconds timer")
-	public void readQueue() {
-		readMessages();
+	@InjectMocks
+	MessageSender msgSender;
+
+	@Before
+	public void setUp() {
+		msgSender = new MessageSender();
+		MockitoAnnotations.initMocks(this);
+		Mockito.when(props.getProperty("mqurl")).thenReturn("tcp://192.168.233.175:61616");
+		Mockito.when(props.getProperty("mqqueuqe")).thenReturn("tomq");
+	}
+	
+	@Rule
+    public TestWatcher watchman = new MyTestWatcher();
+
+	@Test
+	public void sentMessageShouldBeInQueue() throws Exception {
+		msgSender.sendMessage(msg);
+		TextMessage m = getMessage();
+		Assert.assertEquals(msg, m.getText());
 	}
 
-	public void readMessages() {
+	private TextMessage getMessage() {
 
+		TextMessage message = null;
 		try {
+
+			PropertiesHandler props = new PropertiesHandler();
 
 			// Getting JMS connection from the server and starting it
 			ConnectionFactory connectionFactory = new ActiveMQConnectionFactory(props.getProperty("mqurl"));
@@ -52,22 +74,11 @@ public class QueueReader {
 			MessageConsumer consumer = session.createConsumer(destination);
 
 			// read a message from the queue destination
-			Message message = consumer.receive(10);
-
-			// check if a message was received
-			if (message != null) {
-				// cast the message to the correct type
-				TextMessage textMessage = (TextMessage) message;
-
-				// retrieve the message content
-				String text = textMessage.getText();
-				log.info("consumer received message with text=" + text);
-			}
-
-			connection.close();
+			message = (TextMessage) consumer.receive();
+			
 		} catch (JMSException e) {
 			e.printStackTrace();
-			log.error(e.getMessage());
 		}
+		return message;
 	}
 }

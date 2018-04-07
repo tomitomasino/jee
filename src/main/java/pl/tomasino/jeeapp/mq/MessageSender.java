@@ -11,14 +11,13 @@ import javax.jms.Session;
 import javax.jms.TextMessage;
 
 import org.apache.activemq.ActiveMQConnectionFactory;
-import org.apache.log4j.Logger;
 
+import lombok.extern.slf4j.Slf4j;
 import pl.tomasino.jeeapp.utils.PropertiesHandler;
 
 @Dependent
+@Slf4j
 public class MessageSender {
-
-	final static Logger logger = Logger.getLogger(MessageSender.class);
 
 	@Inject
 	PropertiesHandler props;
@@ -26,7 +25,7 @@ public class MessageSender {
 	public void sendMessage(String msg) {
 
 		try {
-			logger.info("Message to be sent: " + msg);
+			log.info("Message to be sent: " + msg);
 			// Getting JMS connection from the server and starting it
 			ConnectionFactory connectionFactory = new ActiveMQConnectionFactory(props.getProperty("mqurl"));
 			Connection connection = connectionFactory.createConnection();
@@ -49,11 +48,11 @@ public class MessageSender {
 			// Here we are sending our message!
 			producer.send(message);
 
-			logger.info("Message sent: " + message.getText());
+			log.info("Message sent: " + message.getText());
 			connection.close();
 		} catch (JMSException e) {
 			e.printStackTrace();
-			logger.error(e);
+			log.error(e.getErrorCode());
 		}
 	}
 }
